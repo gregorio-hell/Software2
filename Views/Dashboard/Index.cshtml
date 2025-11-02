@@ -1,0 +1,134 @@
+@model software.Models.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Dashboard</h1>
+        <button class="btn btn-primary">
+            <i class="bi bi-file-pdf"></i> Exportar a PDF
+        </button>
+    </div>
+
+    <h4 class="mb-4">Resumen general del inventario</h4>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Total Productos</h5>
+                    <h2>@Model.TotalProductos</h2>
+                    <small>@Model.InventarioPorCategoria.Count categorías</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Valor Total</h5>
+                    <h2>$@Model.ValorTotal.ToString("N2")</h2>
+                    <small>Valorización del inventario</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Bajo Stock</h5>
+                    <h2>@Model.BajoStock</h2>
+                    <small>Productos por debajo del mínimo</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Alertas Críticas</h5>
+                    <h2>@Model.AlertasCriticas</h2>
+                    <small>@Model.EstadoDelInventario.VencidosoPorVencer vencidos, @(Model.AlertasCriticas - Model.EstadoDelInventario.VencidosoPorVencer) por vencer</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Inventario por Categoría</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Unidades</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var categoria in Model.InventarioPorCategoria)
+                                {
+                                    <tr>
+                                        <td>@categoria.Nombre</td>
+                                        <td>@categoria.Unidades unidades</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Valorización por Categoría</h5>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var categoria in Model.ValorizacionPorCategoria)
+                                {
+                                    <tr>
+                                        <td>@categoria.Nombre</td>
+                                        <td>$@categoria.Valor.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5>Estado del Inventario</h5>
+                    <div class="d-flex justify-content-around text-center">
+                        <div class="p-3">
+                            <div class="h4 text-success">@Model.EstadoDelInventario.ProductosOptimos</div>
+                            <div>Productos Óptimos</div>
+                        </div>
+                        <div class="p-3">
+                            <div class="h4 text-warning">@Model.EstadoDelInventario.BajoStock</div>
+                            <div>Bajo Stock</div>
+                        </div>
+                        <div class="p-3">
+                            <div class="h4 text-danger">@Model.EstadoDelInventario.VencidosoPorVencer</div>
+                            <div>Vencidos/Por Vencer</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

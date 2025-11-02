@@ -1,0 +1,151 @@
+@model IEnumerable<software.Models.Producto>
+
+@{
+    ViewData["Title"] = "Gestión de Productos";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestión de Productos</h1>
+        <div>
+            <button class="btn btn-secondary me-2">
+                <i class="bi bi-file-pdf"></i> Exportar a PDF
+            </button>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-lg"></i> Agregar Producto
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <h6 class="card-subtitle mb-3">Administra tu inventario completo</h6>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre, código o lote...">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <select class="form-select" id="categoryFilter">
+                        <option value="">Todas las categorías</option>
+                        <option value="Lácteos">Lácteos</option>
+                        <option value="Panadería">Panadería</option>
+                        <option value="Aceites">Aceites</option>
+                        <option value="Granos">Granos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Cantidad</th>
+                            <th>Ubicación</th>
+                            <th>Vencimiento</th>
+                            <th>Estado Stock</th>
+                            <th>Valor Total</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Codigo</td>
+                                <td>@item.Nombre</td>
+                                <td>@item.Categoria</td>
+                                <td>@item.Cantidad</td>
+                                <td>@item.Ubicacion</td>
+                                <td>
+                                    @item.Vencimiento.ToString("yyyy-MM-dd")
+                                    <span class="badge bg-@(item.Estado == "Vigente" ? "success" : 
+                                                         item.Estado == "Próximo a vencer" ? "warning" : "danger")">
+                                        @item.Estado
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@(item.EstadoStock == "Disponible" ? "success" : "warning")">
+                                        @item.EstadoStock
+                                    </span>
+                                </td>
+                                <td>$@item.ValorTotal.ToString("N2")</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a asp-action="Edit" asp-route-id="@item.Codigo" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="deleteProduct('@item.Codigo')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    Total de productos: @Model.Count()
+                </div>
+                <div>
+                    Valor total: $@Model.Sum(p => p.ValorTotal).ToString("N2")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteProduct(id) {
+            if (confirm('¿Está seguro que desea eliminar este producto?')) {
+                fetch('/Productos/Delete/' + id, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }).then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                });
+            }
+        }
+
+        // Filtrado de productos
+        document.getElementById('searchInput').addEventListener('keyup', filterProducts);
+        document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+
+        function filterProducts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const category = document.getElementById('categoryFilter').value;
+            const rows = document.querySelectorAll('tbody tr');
+
+            rows.forEach(row => {
+                const code = row.cells[0].textContent.toLowerCase();
+                const name = row.cells[1].textContent.toLowerCase();
+                const productCategory = row.cells[2].textContent;
+                
+                const matchesSearch = code.includes(searchTerm) || 
+                                    name.includes(searchTerm);
+                const matchesCategory = category === '' || 
+                                      productCategory === category;
+
+                row.style.display = matchesSearch && matchesCategory ? '' : 'none';
+            });
+        }
+    </script>
+}
